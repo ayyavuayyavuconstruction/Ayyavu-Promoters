@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Site, SiteStatus, PaymentRecord, SiteDimensions } from '../types';
 import { CurrencyFormatter, NumberFormatter } from './Formatters';
 import { getSiteReport } from '../services/geminiService';
+import { paymentService } from '../services/supabaseService';
 import { SQFT_TO_CENTS } from '../constants';
 
 interface SiteDetailProps {
@@ -353,18 +354,20 @@ const SiteDetail: React.FC<SiteDetailProps> = ({ site, onClose, onDelete, onUpda
             
             <section className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Record New Payment</h3>
-              <form onSubmit={(e) => {
+              <form onSubmit={async (e) => {
                 e.preventDefault();
                 const amountNum = parseFloat(paymentAmount);
                 if (isNaN(amountNum) || amountNum <= 0) return;
-                const newPayment: PaymentRecord = {
-                  id: `pay-${Date.now()}`,
+                const newPayment: Omit<PaymentRecord, 'id'> = {
                   amount: amountNum,
                   date: paymentDate,
                   method: paymentMethod
                 };
-                onUpdate({ payments: [...(site.payments || []), newPayment] });
-                setPaymentAmount('');
+                const paymentId = await paymentService.create(site.id, newPayment);
+                if (paymentId) {
+                  setPaymentAmount('');
+                  onUpdate({});
+                }
               }} className="space-y-4">
                 <div className="relative">
                   <i className="fas fa-indian-rupee-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
