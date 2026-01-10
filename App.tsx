@@ -9,6 +9,7 @@ import ExportModal from './components/ExportModal';
 import { CurrencyFormatter } from './components/Formatters';
 import { getProjectOverview } from './services/geminiService';
 import { projectService, companySettingsService, siteService } from './services/supabaseService';
+import { supabase } from './lib/supabase';
 
 const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -177,6 +178,47 @@ const App: React.FC = () => {
       return matchesSearch && matchesStatus;
     });
   }, [selectedProject, searchQuery, statusFilter]);
+
+  if (!supabase) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+        <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <i className="fas fa-city text-2xl"></i>
+            </div>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 text-center mb-3">EstateNexus</h1>
+          <p className="text-slate-600 text-center mb-8 text-sm leading-relaxed">Missing Configuration</p>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8">
+            <p className="text-amber-900 font-bold text-sm mb-4">Please configure Supabase to continue:</p>
+            <ol className="space-y-3 text-amber-900 text-sm">
+              <li className="flex gap-3">
+                <span className="font-black text-amber-600">1.</span>
+                <span>Create a Supabase project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-bold hover:underline">supabase.com</a></span>
+              </li>
+              <li className="flex gap-3">
+                <span className="font-black text-amber-600">2.</span>
+                <span>Copy your project URL and Anonymous Key from Settings</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="font-black text-amber-600">3.</span>
+                <span>Add to <code className="bg-slate-100 px-2 py-1 rounded font-mono text-xs">.env.local</code>:</span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="bg-slate-900 text-slate-100 rounded-2xl p-4 font-mono text-xs mb-8 overflow-x-auto">
+            <p className="mb-2">VITE_SUPABASE_URL=https://your-project.supabase.co</p>
+            <p>VITE_SUPABASE_ANON_KEY=your_anon_key</p>
+          </div>
+
+          <p className="text-slate-500 text-xs text-center">After updating .env.local, refresh this page</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

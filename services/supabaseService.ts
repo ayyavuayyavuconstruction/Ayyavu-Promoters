@@ -1,8 +1,15 @@
 import { supabase } from '../lib/supabase';
 import { Project, Site, CompanySettings, PaymentRecord } from '../types';
 
+const ensureSupabase = () => {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.');
+  }
+};
+
 export const companySettingsService = {
   async get(): Promise<CompanySettings | null> {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('company_settings')
       .select('*')
@@ -26,6 +33,7 @@ export const companySettingsService = {
   },
 
   async update(settings: CompanySettings): Promise<boolean> {
+    if (!supabase) return false;
     const { data: existing } = await supabase
       .from('company_settings')
       .select('id')
@@ -68,6 +76,7 @@ export const companySettingsService = {
 
 export const projectService = {
   async getAll(): Promise<Project[]> {
+    if (!supabase) return [];
     const { data: projectsData, error: projectsError } = await supabase
       .from('projects')
       .select('*')
@@ -131,6 +140,7 @@ export const projectService = {
   },
 
   async create(project: Omit<Project, 'id' | 'sites'>): Promise<string | null> {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('projects')
       .insert([{
@@ -151,6 +161,7 @@ export const projectService = {
   },
 
   async update(id: string, project: Omit<Project, 'id' | 'sites'>): Promise<boolean> {
+    if (!supabase) return false;
     const { error } = await supabase
       .from('projects')
       .update({
@@ -187,6 +198,7 @@ export const projectService = {
 
 export const siteService = {
   async create(projectId: string, site: Omit<Site, 'id'>): Promise<string | null> {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('sites')
       .insert([{
@@ -220,6 +232,7 @@ export const siteService = {
   },
 
   async update(id: string, updates: Partial<Site>): Promise<boolean> {
+    if (!supabase) return false;
     const payload: any = {
       updated_at: new Date().toISOString(),
     };
@@ -255,6 +268,7 @@ export const siteService = {
   },
 
   async delete(id: string): Promise<boolean> {
+    if (!supabase) return false;
     const { error } = await supabase
       .from('sites')
       .delete()
@@ -271,6 +285,7 @@ export const siteService = {
 
 export const paymentService = {
   async create(siteId: string, payment: Omit<PaymentRecord, 'id'>): Promise<string | null> {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('payment_records')
       .insert([{
@@ -292,6 +307,7 @@ export const paymentService = {
   },
 
   async delete(id: string): Promise<boolean> {
+    if (!supabase) return false;
     const { error } = await supabase
       .from('payment_records')
       .delete()
